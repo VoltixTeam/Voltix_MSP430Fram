@@ -1,0 +1,29 @@
+name: Release firmware
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  call-build:
+    uses: ./.github/workflows/build.yml
+  release-firmware:
+    runs-on: ubuntu-latest
+    needs: call-build
+    steps:
+      - run: mkdir output
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: msp430_nvm_fw
+
+      - run: mv build.hex msp430_nvm_fw_${{github.ref_name}}.hex
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: msp430_nvm_fw_${{github.ref_name}}.hex
